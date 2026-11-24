@@ -1,0 +1,39 @@
+# KeyVault - Infrastructure locale
+# Usage :
+#   docker compose up -d      -> demarre PostgreSQL + Adminer
+#   docker compose down       -> arrete les conteneurs (donnees conservees)
+#   docker compose down -v    -> arrete ET supprime les donnees
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: keyvault-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: keyvault
+      POSTGRES_PASSWORD: keyvault
+      POSTGRES_DB: keyvault
+    ports:
+      - "5432:5432"
+    volumes:
+      - keyvault_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keyvault -d keyvault"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Interface web pour inspecter la base (utile pour apprendre SQL
+  # et verifier que les secrets sont bien chiffres)
+  adminer:
+    image: adminer:latest
+    container_name: keyvault-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  keyvault_pgdata:
