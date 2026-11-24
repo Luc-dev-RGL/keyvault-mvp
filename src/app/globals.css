@@ -1,0 +1,320 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.55rem;
+
+  /* Palette Fluent-inspired (edition blanc pur, maquette KeyVault) */
+  --brand: #0078d4;
+  --brand-strong: #005fb8;
+  --brand-hover: #106ebe;
+  --brand-tint: #eff6fc;
+  --brand-tint2: #deecf9;
+  --teal: #038387;
+  --teal-tint: #e4f4f4;
+  --green: #107c10;
+  --green-tint: #dff6dd;
+  --amber: #ffb900;
+  --amber-text: #8a5a00;
+  --amber-tint: #fff4ce;
+  --orange: #f7630c;
+  --orange-tint: #fdefe3;
+  --red: #d13438;
+  --red-tint: #fdf3f4;
+  --purple: #8764b8;
+  --purple-tint: #f3effa;
+
+  --background: #ffffff;
+  --foreground: #1a1a20;
+  --card: #ffffff;
+  --card-foreground: #1a1a20;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a20;
+  --primary: #005fb8;
+  --primary-foreground: #ffffff;
+  --secondary: #f2f3f6;
+  --secondary-foreground: #1a1a20;
+  --muted: #f7f7f9;
+  --muted-foreground: #5d5f6b;
+  --accent: #eff6fc;
+  --accent-foreground: #005fb8;
+  --destructive: #c42b1c;
+  --border: #e2e2e8;
+  --input: #d9d9e0;
+  --ring: rgba(0, 95, 184, 0.45);
+  --chart-1: #0078d4;
+  --chart-2: #038387;
+  --chart-3: #8764b8;
+  --chart-4: #107c10;
+  --chart-5: #f7630c;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a20;
+  --sidebar-primary: #005fb8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eff6fc;
+  --sidebar-accent-foreground: #005fb8;
+  --sidebar-border: #e9e9ef;
+  --sidebar-ring: rgba(0, 95, 184, 0.45);
+}
+
+.dark {
+  --background: #16161c;
+  --foreground: #ececf1;
+  --card: #1d1d25;
+  --card-foreground: #ececf1;
+  --popover: #1d1d25;
+  --popover-foreground: #ececf1;
+  --primary: #479ef5;
+  --primary-foreground: #101318;
+  --secondary: #26262f;
+  --secondary-foreground: #ececf1;
+  --muted: #26262f;
+  --muted-foreground: #a2a4b0;
+  --accent: #16283a;
+  --accent-foreground: #6cb8f6;
+  --destructive: #e2695c;
+  --border: #2c2c37;
+  --input: #34343f;
+  --ring: rgba(71, 158, 245, 0.5);
+  --chart-1: #479ef5;
+  --chart-2: #32bdb0;
+  --chart-3: #a68fd4;
+  --chart-4: #6bbf59;
+  --chart-5: #f1944d;
+  --sidebar: #1d1d25;
+  --sidebar-foreground: #ececf1;
+  --sidebar-primary: #479ef5;
+  --sidebar-primary-foreground: #101318;
+  --sidebar-accent: #16283a;
+  --sidebar-accent-foreground: #6cb8f6;
+  --sidebar-border: #2c2c37;
+  --sidebar-ring: rgba(71, 158, 245, 0.5);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+    letter-spacing: -0.005em;
+  }
+  ::selection {
+    background: var(--brand-tint2);
+    color: var(--brand-strong);
+  }
+}
+
+/* ============ KeyVault — briques de style console ============ */
+
+/* Fond "blueprint" : grille technique discrete */
+.kv-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(0, 120, 212, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 120, 212, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.dark .kv-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(108, 184, 246, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(108, 184, 246, 0.06) 1px, transparent 1px);
+}
+
+/* Etiquette mono type terminal */
+.kv-kicker {
+  font-family: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Pastilles de statut (chips Fluent) */
+.kv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface, #fff);
+  padding: 2px 9px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.kv-chip--blue { border-color: rgba(0, 120, 212, 0.35); background: var(--brand-tint); color: var(--brand-strong); }
+.kv-chip--green { border-color: rgba(16, 124, 16, 0.35); background: var(--green-tint); color: var(--green); }
+.kv-chip--amber { border-color: rgba(138, 90, 0, 0.35); background: var(--amber-tint); color: var(--amber-text); }
+.kv-chip--red { border-color: rgba(209, 52, 56, 0.35); background: var(--red-tint); color: var(--red); }
+.kv-chip--teal { border-color: rgba(3, 131, 135, 0.35); background: var(--teal-tint); color: var(--teal); }
+.kv-chip--purple { border-color: rgba(135, 100, 184, 0.4); background: var(--purple-tint); color: #6b4fa0; }
+.kv-chip--mono {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  color: var(--muted-foreground);
+}
+.dark .kv-chip--blue { color: #6cb8f6; }
+.dark .kv-chip--green { color: #6bbf59; }
+.dark .kv-chip--amber { color: #f5c451; }
+.dark .kv-chip--red { color: #e2695c; }
+.dark .kv-chip--teal { color: #32bdb0; }
+.dark .kv-chip--purple { color: #a68fd4; }
+
+/* Tuile d'icone carree (avatar d'action) */
+.kv-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: #fff;
+  flex-shrink: 0;
+}
+.dark .kv-tile { background: var(--card); }
+.kv-tile--blue { background: var(--brand-tint); border-color: rgba(0, 120, 212, 0.3); color: var(--brand-strong); }
+.kv-tile--green { background: var(--green-tint); border-color: rgba(16, 124, 16, 0.3); color: var(--green); }
+.kv-tile--amber { background: var(--amber-tint); border-color: rgba(138, 90, 0, 0.3); color: var(--amber-text); }
+.kv-tile--red { background: var(--red-tint); border-color: rgba(209, 52, 56, 0.3); color: var(--red); }
+.kv-tile--teal { background: var(--teal-tint); border-color: rgba(3, 131, 135, 0.3); color: var(--teal); }
+.kv-tile--purple { background: var(--purple-tint); border-color: rgba(135, 100, 184, 0.35); color: #6b4fa0; }
+.dark .kv-tile--blue { color: #6cb8f6; }
+.dark .kv-tile--green { color: #6bbf59; }
+.dark .kv-tile--amber { color: #f5c451; }
+.dark .kv-tile--red { color: #e2695c; }
+.dark .kv-tile--teal { color: #32bdb0; }
+.dark .kv-tile--purple { color: #a68fd4; }
+
+/* Carte console : ombre douce + survol dynamique */
+.kv-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+}
+.kv-card--hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 120, 212, 0.45);
+  box-shadow: 0 8px 22px rgba(0, 95, 184, 0.12), 0 2px 6px rgba(16, 24, 40, 0.06);
+}
+
+/* Point de vie anime */
+@keyframes kv-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 124, 16, 0.45); }
+  70% { box-shadow: 0 0 0 5px rgba(16, 124, 16, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 124, 16, 0); }
+}
+.kv-dot-live {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--green);
+  animation: kv-pulse 2.2s ease-out infinite;
+}
+
+/* Item de navigation laterale */
+.kv-nav-item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  transition: background 0.15s ease, color 0.15s ease;
+  text-align: left;
+}
+.kv-nav-item:hover { background: var(--muted); color: var(--foreground); }
+.kv-nav-item[data-active="true"] {
+  background: var(--brand-tint);
+  color: var(--brand-strong);
+  font-weight: 600;
+}
+.dark .kv-nav-item[data-active="true"] { background: var(--accent); color: var(--accent-foreground); }
+.kv-nav-item[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--brand);
+}
+
+/* Barre de defilement discrete */
+.kv-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.kv-scroll::-webkit-scrollbar-track { background: transparent; }
+.kv-scroll::-webkit-scrollbar-thumb {
+  background: #cfcfd6;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.kv-scroll::-webkit-scrollbar-thumb:hover { background: #b8b8c2; background-clip: content-box; }
+.dark .kv-scroll::-webkit-scrollbar-thumb { background: #3a3a46; background-clip: content-box; }
+
+/* Valeur Revelee : encadre attention avec bandeau compte a rebours */
+.kv-reveal {
+  border: 1px solid rgba(138, 90, 0, 0.4);
+  background: linear-gradient(0deg, rgba(255, 244, 206, 0.55), rgba(255, 244, 206, 0.55));
+  border-radius: 9px;
+}
+.dark .kv-reveal { border-color: rgba(245, 196, 81, 0.4); background: rgba(245, 196, 81, 0.08); }
+
+/* Separateur vertical mono pour metadonnees */
+.kv-meta { font-size: 12px; color: var(--muted-foreground); }
