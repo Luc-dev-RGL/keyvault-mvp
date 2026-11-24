@@ -1,0 +1,3 @@
+# Application interne : aucun moteur de recherche n'a affaire ici.
+User-agent: *
+Disallow: /
