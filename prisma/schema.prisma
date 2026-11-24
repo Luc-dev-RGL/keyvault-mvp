@@ -1,0 +1,168 @@
+// KeyVault MVP - Schema Prisma
+// Spec : docs/CAHIER_DE_CHARGE.md (section 8 - Modele de donnees)
+// Base : PostgreSQL 16 (conteneur Docker local, voir docker-compose.yml)
+// Commandes : bun run db:push (creation des tables), bun run db:seed (admin initial)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Les trois roles de la plateforme (spec section 4.1).
+// Le role est global : un SUPERVISOR ne supervise toutefois que les projets
+// ou il est designe via Project.supervisorId.
+enum Role {
+  ADMIN
+  SUPERVISOR
+  MEMBER
+}
+
+// Actions du journal d'audit (spec section 5.6).
+// Journal en lecture seule : aucune route d'ecriture n'existera.
+enum AuditAction {
+  AUTH_LOGIN
+  AUTH_LOGIN_FAILED
+  AUTH_LOGOUT
+  PASSWORD_CHANGED
+  USER_CREATED
+  USER_UPDATED
+  USER_DEACTIVATED
+  PASSWORD_RESET
+  PROJECT_CREATED
+  PROJECT_DELETED
+  MEMBER_ASSIGNED
+  MEMBER_REMOVED
+  SECRET_CREATED
+  SECRET_UPDATED
+  SECRET_DELETED
+  SECRET_REVEALED
+  ENV_EXPORTED
+  PERSONAL_SECRET_CREATED
+  PERSONAL_SECRET_UPDATED
+  PERSONAL_SECRET_DELETED
+  PERSONAL_SECRET_REVEALED
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  name               String
+  email              String   @unique
+  passwordHash       String // bcrypt, cout 10 minimum (spec section 6.1)
+  role               Role     @default(MEMBER)
+  isActive           Boolean  @default(true) // false = compte desactive (CA8)
+  mustChangePassword Boolean  @default(false) // mot de passe temporaire : changement force (CA7)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Projets
+  supervisedProjects Project[]           @relation("ProjectSupervisor")
+  createdProjects    Project[]           @relation("ProjectCreator")
+  memberships        ProjectMembership[] @relation("MembershipMember")
+  addedMemberships   ProjectMembership[] @relation("MembershipAdder")
+  updatedSecrets     Secret[]            @relation("SecretUpdater")
+
+  // Coffre personnel et audit
+  personalSecrets PersonalSecret[]
+  auditLogs       AuditLog[]
+
+  @@index([email])
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  name         String
+  description  String   @default("")
+  supervisorId String?
+  createdById  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Le superviseur designe (un seul par projet, spec section 4.1).
+  // SetNull : si le compte superviseur etait supprime, le projet reste
+  // (l'admin en designe un autre). En MVP les comptes sont desactives,
+  // jamais supprimes.
+  supervisor User?  @relation("ProjectSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+  createdBy  User   @relation("ProjectCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  secrets    Secret[]
+  members    ProjectMembership[]
+  auditLogs  AuditLog[]
+
+  @@index([supervisorId])
+  @@index([createdById])
+}
+
+model ProjectMembership {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  addedById String
+  createdAt DateTime @default(now())
+
+  // Cascade : supprimer un projet supprime ses assignations (spec section 8).
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("MembershipMember", fields: [userId], references: [id], onDelete: Cascade)
+  addedBy User    @relation("MembershipAdder", fields: [addedById], references: [id], onDelete: Restrict)
+
+  // Un utilisateur ne peut etre assigne qu'une fois par projet (spec section 8)
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+model Secret {
+  id          String   @id @default(cuid())
+  projectId   String
+  key         String // format : ^[A-Za-z_][A-Za-z0-9_]*$ (valide a l'entree API)
+  valueEnc    String // valeur chiffree AES-256-GCM, base64 - jamais en clair (CA4)
+  iv          String // vecteur d'initialisation unique par chiffrement, base64
+  authTag     String // tag d'authentification GCM, base64
+  updatedById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Cascade : supprimer un projet supprime ses secrets (spec section 8)
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  updatedBy User   @relation("SecretUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  // Une cle de variable d'environnement est unique par projet (spec section 8)
+  @@unique([projectId, key])
+  @@index([projectId])
+}
+
+model PersonalSecret {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String
+  valueEnc  String // chiffre AES-256-GCM - inaccessible aux autres, meme a l'admin (CA10)
+  iv        String
+  authTag   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Une cle personnelle est unique par utilisateur (spec section 8)
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String? // nullable : l'auteur peut disparaitre, l'entree reste
+  action    AuditAction
+  projectId String? // le projet concerne, le cas echeant
+  detail    String // detail synthetique - AUCUNE valeur de secret (spec 6.6)
+  createdAt DateTime    @default(now())
+
+  // SetNull : conserver l'historique meme si l'utilisateur ou le projet
+  // venait a disparaitre - le journal est immuable (spec 6.8)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([createdAt])
+}
